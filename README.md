@@ -1,2 +1,3 @@
 # nevergrad4sf
-Optimize stockfish parameters using
+
+Optimize stockfish parameters using nevergrad.
