@@ -2,29 +2,9 @@
 Use nevergrad to optimize tunable stockfish parameters
 
 Interfaces between nevergrad, cutechess, and stockfish to optimize
-parameters marked for tuning in sf (TUNE()). The score of a match
-is used as the objective function, and optimized with the TBPSA method,
-which is effective for noisy objective functions.
+parameters marked for tuning in sf.
 
-The implementation features MPI (multi node) parallelism in a master-slave
-fashion via an MPIPoolExecutor, and further concurrency via cutechess.
-To invoke with MPI parallelism (assuming a functional mpirun):
-
-mpirun -np 3 python3 -m mpi4py.futures nevergrad4sf.py
-
-Optionally, ongoing optimizations can be restarted.
-
-To run the optimizer, the working directory needs:
-  1) a suitable compiled stockfish (with TUNE() marked variables)
-  2) a recent cutechess-cli
-  3) an opening book (noob_3moves.epd)
-
-First experience suggests to use
-  1) ~10000 games per batch, TBPSA can deal with the noise, but better keep it small.
-  2) few parameters (N = 2-6), 5 * N batches need to be evaluated to perform 1 TBPSA iteration,
-     about 10 iter are needed at least. Monitor changes in the optimal parameters
-     to judge convergence.
-  3) realistic TC, unfortunately, VSTC results will gain at VSTC, but not at LTC.
+See https://github.com/vondele/nevergrad4sf/blob/master/README.md for details.
 """
 
 import math
@@ -35,6 +15,7 @@ import datetime
 import time
 import argparse
 import json
+import textwrap
 import nevergrad as ng
 from subprocess import Popen, PIPE
 from cutechess_batches import CutechessExecutorBatch, calc_stats
@@ -267,8 +248,25 @@ def ng4sf(
 
 if __name__ == "__main__":
 
+    class MyFormatter(
+        argparse.ArgumentDefaultsHelpFormatter, argparse.RawDescriptionHelpFormatter
+    ):
+        pass
+
     parser = argparse.ArgumentParser(
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter
+        formatter_class=MyFormatter,
+        description=textwrap.dedent(
+            """\
+                  Use nevergrad to optimize tunable stockfish parameters.
+
+                  This program requires mpi to run. A typical invocation could be:
+                     mpirun -np 3 python3 -m mpi4py.futures nevergrad4sf.py -tc 1.0+0.01 -g 2 -cc 2 -ec 3 --ng 10
+
+                  More documentation at:
+                     https://github.com/vondele/nevergrad4sf/blob/master/README.md
+
+                  """
+        ),
     )
     parser.add_argument(
         "--stockfish",

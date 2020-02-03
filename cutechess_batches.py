@@ -14,6 +14,7 @@ import random
 import re
 import json
 import argparse
+import textwrap
 from mpi4py.futures import MPIPoolExecutor
 from mpi4py import MPI
 from concurrent.futures import as_completed
@@ -215,8 +216,25 @@ class CutechessExecutorBatch:
 # will lauch 2 workers (1 master).
 if __name__ == "__main__":
 
+    class MyFormatter(
+        argparse.ArgumentDefaultsHelpFormatter, argparse.RawDescriptionHelpFormatter
+    ):
+        pass
+
     parser = argparse.ArgumentParser(
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter
+        formatter_class=MyFormatter,
+        description=textwrap.dedent(
+            """\
+                  Compute batches of chess games using cutechess.
+
+                  This program requires mpi to run. A typical invocation could be:
+                     mpirun -np 3 python3 -m mpi4py.futures cutechess_batches.py -tc 1.0+0.01 -g 10000 -cc 8
+
+                  More documentation at:
+                     https://github.com/vondele/nevergrad4sf/blob/master/README.md
+
+                  """
+        ),
     )
     parser.add_argument(
         "--stockfish",
