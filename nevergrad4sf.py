@@ -293,14 +293,14 @@ if __name__ == "__main__":
         "-g",
         "--games_per_batch",
         type=int,
-        default=5000,
+        default=20000,
         help="Number of games per evaluation point",
     )
     parser.add_argument(
         "-cc",
         "--cutechess_concurrency",
         type=int,
-        default=2,
+        default=8,
         help="Number of concurrent games per cutechess worker",
     )
     parser.add_argument(
@@ -314,7 +314,7 @@ if __name__ == "__main__":
         "-ng",
         "--ng_evals",
         type=int,
-        default=1000,
+        default=10000,
         help="Number of nevergrad evaluation points",
     )
     parser.add_argument(

@@ -18,7 +18,6 @@ import textwrap
 from mpi4py.futures import MPIPoolExecutor
 from mpi4py import MPI
 from concurrent.futures import as_completed
-from threading import Lock
 
 
 def elo(score):
@@ -285,8 +284,8 @@ if __name__ == "__main__":
         variables = json.load(infile)
 
     print(
-        "Starting evaluation (%d games) with %d workers for the parameter set %s"
-        % (args.games_per_batch, workers, str(variables)),
+        "Starting evaluation (%d games, tc %s) with %d workers for the parameter set %s"
+        % (args.games_per_batch, args.tc, workers, str(variables)),
         flush=True,
     )
 
