@@ -70,7 +70,13 @@ mpirun -np 16 python3 -m mpi4py.futures nevergrad4sf.py -tc 1.0+0.01 -g 20000 -c
 ```
 This will start the optimization process, computing 100 batches each 20000 games at
 time control 1.0+0.01, using 8 * 16 cores.  Some intermediate results will be printed
-during optimization.  Additionally, files are written during optimization, namely:
+during optimization. For each set of parameters evaluated, some basic statistics will be printed.
+Whenever a new optimal set of parameters is found, nevergrad4sf has performed one more interation,
+and the optimal parameters so far are printed. Convergence is not monitored automatically,
+a dozen or so iterations is at least required. One can visualize the evolution of the optimal parameters,
+and expect those results to stabilize.
+
+Additionally, files are written during optimization, namely:
 * `optimal.json` a dictionary of best parameters so far.
 * `ng_restart.pkl` a file that can be used to restart an interrupted optimization (using the `--restart` option).
 
