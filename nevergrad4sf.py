@@ -59,6 +59,7 @@ def var2int(**variables):
 
 def ng4sf(
     stockfish,
+    stockfishRef,
     cutechess,
     book,
     tc,
@@ -89,6 +90,9 @@ def ng4sf(
 
     # print summary
     print("stockfish binary                          : ", stockfish)
+    print(
+        "stockfish reference binary                : ", stockfishRef
+    )
     print("cutechess binary                          : ", cutechess)
     print("book                                      : ", book)
     print("time control                              : ", tc)
@@ -120,6 +124,7 @@ def ng4sf(
     batch = CutechessExecutorBatch(
         cutechess=cutechess,
         stockfish=stockfish,
+        stockfishRef=stockfishRef,
         book=book,
         tc=tc,
         rounds=((games_per_batch + 1) // 2 + mpi_subbatches - 1) // mpi_subbatches,
@@ -135,17 +140,17 @@ def ng4sf(
         if (
             sf_params[v][1] != sf_params[v][2]
         ):  # Let equal bounds imply fixed not a parameter.
-            variables[v] = (
-                ng.var.Array(1)
-                .asscalar()
-                .bounded(float(sf_params[v][1]), float(sf_params[v][2]))
+            variables[v] = ng.p.Scalar(init=float(sf_params[v][0])).set_bounds(
+                lower=float(sf_params[v][1]),
+                upper=float(sf_params[v][2]),
+                method="constraint",
             )
 
     # init ng optimizer, restarting as hardcoded
-    instrum = ng.Instrumentation(**variables)
+    instrum = ng.p.Instrumentation(**variables)
     if not do_restart:
         optimizer = ng.optimizers.TBPSA(
-            instrumentation=instrum,
+            parametrization=instrum,
             budget=nevergrad_evals,
             num_workers=evaluation_concurrency,
         )
@@ -272,7 +277,13 @@ if __name__ == "__main__":
         "--stockfish",
         type=str,
         default="./stockfish",
-        help="Name of the stockfish binary",
+        help="Name of the stockfish binary to be optimized",
+    )
+    parser.add_argument(
+        "--stockfishRef",
+        type=str,
+        default=None,
+        help="Optional, name of the reference stockfish binary to be used, defaults to the --stockfish argument.",
     )
     parser.add_argument(
         "--cutechess",
@@ -324,6 +335,7 @@ if __name__ == "__main__":
 
     result = ng4sf(
         args.stockfish,
+        args.stockfishRef if args.stockfishRef else args.stockfish,
         args.cutechess,
         args.book,
         args.tc,

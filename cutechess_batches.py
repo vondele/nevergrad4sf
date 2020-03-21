@@ -68,6 +68,7 @@ class CutechessLocalBatch:
         self,
         cutechess="./cutechess-cli",
         stockfish="./stockfish",
+        stockfishRef="./stockfish",
         book="noob_3moves.epd",
         tc="10.0+1.0",
         rounds=100,
@@ -76,6 +77,7 @@ class CutechessLocalBatch:
         """Basic properties of the batch of games can be specified"""
         self.cutechess = cutechess
         self.stockfish = stockfish
+        self.stockfishRef = stockfishRef
         self.book = book
         self.tc = tc
         self.rounds = rounds
@@ -93,7 +95,7 @@ class CutechessLocalBatch:
         fcp = "name=test cmd=%s" % self.stockfish
 
         # The reference engine
-        scp = "name=base cmd=%s" % self.stockfish
+        scp = "name=base cmd=%s" % self.stockfishRef
 
         # Parse the parameters that should be optimized
         for name in variables:
@@ -174,6 +176,7 @@ class CutechessExecutorBatch:
         self,
         cutechess="./cutechess-cli",
         stockfish="./stockfish",
+        stockfishRef="./stockfish",
         book="noob_3moves.epd",
         tc="10.0+0.1",
         rounds=2,
@@ -187,7 +190,7 @@ class CutechessExecutorBatch:
         """
 
         self.local_batch = CutechessLocalBatch(
-            cutechess, stockfish, book, tc, rounds, concurrency
+            cutechess, stockfish, stockfishRef, book, tc, rounds, concurrency
         )
         self.batches = batches
         self.total_games = self.batches * self.local_batch.total_games
@@ -239,7 +242,13 @@ if __name__ == "__main__":
         "--stockfish",
         type=str,
         default="./stockfish",
-        help="Name of the stockfish binary",
+        help="Name of the stockfish binary to which options can be passed",
+    )
+    parser.add_argument(
+        "--stockfishRef",
+        type=str,
+        default=None,
+        help="Name of reference engine, used without options. Default to the value of the --stockfish argument.",
     )
     parser.add_argument(
         "--cutechess",
@@ -292,6 +301,7 @@ if __name__ == "__main__":
     batch = CutechessExecutorBatch(
         cutechess=args.cutechess,
         stockfish=args.stockfish,
+        stockfishRef=args.stockfishRef if args.stockfishRef else args.stockfish,
         book=args.book,
         tc=args.tc,
         rounds=((args.games_per_batch + 1) // 2 + workers - 1) // workers,
