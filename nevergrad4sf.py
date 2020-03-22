@@ -90,9 +90,7 @@ def ng4sf(
 
     # print summary
     print("stockfish binary                          : ", stockfish)
-    print(
-        "stockfish reference binary                : ", stockfishRef
-    )
+    print("stockfish reference binary                : ", stockfishRef)
     print("cutechess binary                          : ", cutechess)
     print("book                                      : ", book)
     print("time control                              : ", tc)
@@ -140,10 +138,16 @@ def ng4sf(
         if (
             sf_params[v][1] != sf_params[v][2]
         ):  # Let equal bounds imply fixed not a parameter.
-            variables[v] = ng.p.Scalar(init=float(sf_params[v][0])).set_bounds(
-                lower=float(sf_params[v][1]),
-                upper=float(sf_params[v][2]),
-                method="constraint",
+            variables[v] = (
+                ng.p.Scalar(init=float(sf_params[v][0]))
+                .set_bounds(
+                    lower=float(sf_params[v][1]),
+                    upper=float(sf_params[v][2]),
+                    method="constraint",
+                )
+                .set_mutation(
+                    sigma=(float(sf_params[v][2]) - float(sf_params[v][1])) / 4
+                )
             )
 
     # init ng optimizer, restarting as hardcoded
