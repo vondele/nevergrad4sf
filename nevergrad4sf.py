@@ -185,7 +185,7 @@ def ng4sf(
 
         # find the point which is ready
         ready_batch = -1
-        while ready_batch is -1:
+        while ready_batch == -1:
             time.sleep(0.1)
             for i in range(evaluation_concurrency):
                 if evalpoints[i][1].done():
