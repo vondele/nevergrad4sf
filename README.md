@@ -49,7 +49,7 @@ The following list of software packages is needed, a hint is provided on how to 
 
 
 Verify that the requirements are properly installed:
-* `mpirun -np 4 hostname`, should launch 4 processes, each printing the name of the host.
+* `mpiexec -np 4 hostname`, should launch 4 processes, each printing the name of the host. Other commands might be used instead of mpiexec (mpirun, srun, ..).
 * `echo "quit" | ./stockfish`, should print a list of parameters that can be tuned.
 * `python3 nevergrad4sf.py --help`, should print some info on the command-line arguments.
 
@@ -62,11 +62,11 @@ have been copied in the working directory, use suitable paths otherwise.
 Finally, invocation should be easy, either with full option names:
 
 ```
-mpirun -np 16 python3 -m mpi4py.futures nevergrad4sf.py --cutechess ./cutechess_cli --stockfish ./stockfish --book noob_3moves.epd --tc 1.0+0.01 --games_per_batch 20000 --cutechess_concurrency 8 --evaluation_concurrency 3 --ng_evals 100
+mpiexec -np 16 python3 -m mpi4py.futures nevergrad4sf.py --cutechess ./cutechess_cli --stockfish ./stockfish --book noob_3moves.epd --tc 1.0+0.01 --games_per_batch 20000 --cutechess_concurrency 8 --evaluation_concurrency 3 --ng_evals 100
 ```
 or equivalently, using shortcuts and defaults:
 ```
-mpirun -np 16 python3 -m mpi4py.futures nevergrad4sf.py -tc 1.0+0.01 -g 20000 -cc 8 -ec 3 --ng 100
+mpiexec -np 16 python3 -m mpi4py.futures nevergrad4sf.py -tc 1.0+0.01 -g 20000 -cc 8 -ec 3 --ng 100
 ```
 This will start the optimization process, computing 100 batches each 20000 games at
 time control 1.0+0.01, using 8 * 16 cores.  Some intermediate results will be printed
@@ -84,9 +84,9 @@ To verify the quality of the obtained optimal parameters it is possible
 to play a single match using the `optimal.json` parameters, for example verify Elo gain
 using 80000 games at various time controls:
 ```
-mpirun -np 16 python3 -m mpi4py.futures cutechess_batches.py -tc 1.0+0.01 -g 80000 -cc 8
-mpirun -np 16 python3 -m mpi4py.futures cutechess_batches.py -tc 10.0+0.1 -g 80000 -cc 8
-mpirun -np 16 python3 -m mpi4py.futures cutechess_batches.py -tc 60.0+0.6 -g 80000 -cc 8
+mpiexec -np 16 python3 -m mpi4py.futures cutechess_batches.py -tc 1.0+0.01 -g 80000 -cc 8
+mpiexec -np 16 python3 -m mpi4py.futures cutechess_batches.py -tc 10.0+0.1 -g 80000 -cc 8
+mpiexec -np 16 python3 -m mpi4py.futures cutechess_batches.py -tc 60.0+0.6 -g 80000 -cc 8
 ```
 
 ## General tips and tricks
@@ -119,12 +119,12 @@ as the optimizer efficiency could be reduced otherwise. For example, to optimize
 N=10 parameters on 256 nodes with each 32 cores, the following invocation,
 with 4 MPI ranks per node, is assumed to be efficient:
 ```
-mpirun -np 1024 python3 -m mpi4py.futures nevergrad4sf.py -tc 1.0+0.01 -g 40000 -cc 8 -ec 40 --ng 10000
+mpiexec -np 1024 python3 -m mpi4py.futures nevergrad4sf.py -tc 1.0+0.01 -g 40000 -cc 8 -ec 40 --ng 10000
 ```
 
 Finally, it is recommended to avoid binding ranks or threads to cores,
-as thread creation in both cutechess and stockfish is relatively dynamic. Consult `mpirun --help`
-for information, a typical option to mpirun might be `--bind-to none`.
+as thread creation in both cutechess and stockfish is relatively dynamic. Consult `mpiexec --help`
+for information, a typical option to mpiexec might be `--bind-to none`.
 [More advanced options](https://wiki.mpich.org/mpich/index.php/Using_the_Hydra_Process_Manager)
 could be used to fine-tune binding by the expert.  If the reported games played per second
 is surprisingly low, binding is the first aspect to investigate.
