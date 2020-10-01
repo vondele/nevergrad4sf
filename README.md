@@ -29,28 +29,27 @@ and thousands of cores.
 ## requirements
 
 The following list of software packages is needed, a hint is provided on how to obtain those packages on Ubuntu Linux:
+* nevergrad4sf is required
+	* `git clone https://github.com/vondele/nevergrad4sf.git`, until a pip install-able version appears
 * Python 3.6 or later is required for nevergrad
 	* `sudo apt-get install python3`
 * A functional mpi implementation is needed for mpi4py
 	* `sudo apt-get install mpich`
 	* If multi-node parallelism is wanted, explore the [mpi documentation](https://www.mpich.org/documentation/guides/) on how to enable this.
-* nevergrad and mpi4py are installed
-	* `pip3 install nevergrad mpi4py`
+* nevergrad and mpi4py are installed (a specific version of nevergrad will be required)
+	* `pip3 install -r requirements.txt`
 * `cutechess-cli` as well as a suitable opening book (e.g. `noob_3moves.epd`) are required
 	* `git clone https://github.com/official-stockfish/books.git`
 	* unzip the mentioned files, picking a cutechess version that matches your architecture
 * a development version of stockfish is needed
 	* `git clone https://github.com/official-stockfish/Stockfish.git`
-	* merge the tuning branch:  `cd Stockfish/src; git merge origin/tune`
 	* make suitable modifications inserting TUNE() commands, as detailed on the [fishtest wiki](https://github.com/glinscott/fishtest/wiki/Creating-my-first-test#tuning-with-spsa)
-	* compile `cd Stockfish/src; make -j ARCH=x86-64-modern profile-build`
-* nevergrad4sf is required
-	* `git clone https://github.com/vondele/nevergrad4sf.git`, until a pip install-able version appears
+	* compile `cd Stockfish/src; make -j ARCH=x86-64-modern profile-build` (adjust ARCH as needed)
 
 
 Verify that the requirements are properly installed:
 * `mpiexec -np 4 hostname`, should launch 4 processes, each printing the name of the host. Other commands might be used instead of mpiexec (mpirun, srun, ..).
-* `echo "quit" | ./stockfish`, should print a list of parameters that can be tuned.
+* `./stockfish quit`, should print a list of parameters that can be tuned.
 * `python3 nevergrad4sf.py --help`, should print some info on the command-line arguments.
 
 In the above and in the following following, it is assumed that all needed files
