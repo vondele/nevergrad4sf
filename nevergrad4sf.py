@@ -63,6 +63,7 @@ def ng4sf(
     cutechess,
     book,
     tc,
+    tcRef,
     nevergrad_evals,
     do_restart,
     games_per_batch,
@@ -70,10 +71,10 @@ def ng4sf(
     evaluation_concurrency,
 ):
     """
-      nevergrad for sf: optimize parameters in a tuning enabled stockfish.
+    nevergrad for sf: optimize parameters in a tuning enabled stockfish.
 
-      specify binary names, tc, number of points to evaluate, restart or not,
-      games per batch, cutechess concurrency, and evaluation batch concurrency
+    specify binary names, tc, number of points to evaluate, restart or not,
+    games per batch, cutechess concurrency, and evaluation batch concurrency
     """
 
     # ready to run with mpi
@@ -94,6 +95,7 @@ def ng4sf(
     print("cutechess binary                          : ", cutechess)
     print("book                                      : ", book)
     print("time control                              : ", tc)
+    print("time control reference binary             : ", tcRef)
     print("restart                                   : ", do_restart)
     print("nevergrad batch evaluations               : ", nevergrad_evals)
     print("batch size in games                       : ", games_per_batch)
@@ -125,6 +127,7 @@ def ng4sf(
         stockfishRef=stockfishRef,
         book=book,
         tc=tc,
+        tcRef=tcRef,
         rounds=((games_per_batch + 1) // 2 + mpi_subbatches - 1) // mpi_subbatches,
         concurrency=cutechess_concurrency,
         batches=mpi_subbatches,
@@ -305,6 +308,13 @@ if __name__ == "__main__":
         "-tc", "--tc", type=str, default="10.0+0.1", help="time control"
     )
     parser.add_argument(
+        "-tcRef",
+        "--tcRef",
+        type=str,
+        default=None,
+        help="time control of the reference stockfish, defaults to the --tc argument.",
+    )
+    parser.add_argument(
         "-g",
         "--games_per_batch",
         type=int,
@@ -343,6 +353,7 @@ if __name__ == "__main__":
         args.cutechess,
         args.book,
         args.tc,
+        args.tcRef if args.tcRef else args.tc,
         args.ng_evals,
         args.restart,
         args.games_per_batch,

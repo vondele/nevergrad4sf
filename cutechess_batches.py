@@ -71,6 +71,7 @@ class CutechessLocalBatch:
         stockfishRef="./stockfish",
         book="noob_3moves.epd",
         tc="10.0+1.0",
+        tcRef="10.0+1.0",
         rounds=100,
         concurrency=2,
     ):
@@ -80,6 +81,7 @@ class CutechessLocalBatch:
         self.stockfishRef = stockfishRef
         self.book = book
         self.tc = tc
+        self.tcRef = tcRef
         self.rounds = rounds
         self.concurrency = concurrency
         self.total_games = 2 * rounds
@@ -87,15 +89,15 @@ class CutechessLocalBatch:
     def run(self, variables):
         """Run a batch of games returning a list  containing 'w' 'l' 'd' results
 
-           The results are show from the point of view of test, which is the version that is
-           setup using the options set using the variables.
+        The results are show from the point of view of test, which is the version that is
+        setup using the options set using the variables.
         """
 
         # The engine whose parameters will be optimized
-        fcp = "name=test cmd=%s" % self.stockfish
+        fcp = "name=test cmd=%s tc=%s" % (self.stockfish, self.tc)
 
         # The reference engine
-        scp = "name=base cmd=%s" % self.stockfishRef
+        scp = "name=base cmd=%s tc=%s" % (self.stockfishRef, self.tcRef)
 
         # Parse the parameters that should be optimized
         for name in variables:
@@ -121,18 +123,14 @@ class CutechessLocalBatch:
         cutechess_base_args = (
             "-games 2 -repeat "
             + " -openings file=%s format=%s order=random" % (self.book, extension)
-            + " -draw movenumber=34 movecount=8 score=20 -resign movecount=3 score=400"
+            + " -draw movenumber=50 movecount=8 score=5 -resign movecount=3 score=600"
         )
-        cutechess_args = (
-            "-engine %s -engine %s -each proto=uci tc=%s option.Hash=1 -rounds %d -concurrency %d -srand %d"
-            % (
-                fcp,
-                scp,
-                self.tc,
-                self.rounds,
-                self.concurrency,
-                random.SystemRandom().randint(0, 2 ** 31 - 1),
-            )
+        cutechess_args = "-engine %s -engine %s -each proto=uci option.Hash=16 -rounds %d -concurrency %d -srand %d" % (
+            fcp,
+            scp,
+            self.rounds,
+            self.concurrency,
+            random.SystemRandom().randint(0, 2 ** 31 - 1),
         )
         command = "%s %s %s" % (self.cutechess, cutechess_base_args, cutechess_args)
 
@@ -179,6 +177,7 @@ class CutechessExecutorBatch:
         stockfishRef="./stockfish",
         book="noob_3moves.epd",
         tc="10.0+0.1",
+        tcRef="10.0+0.1",
         rounds=2,
         concurrency=2,
         batches=1,
@@ -186,11 +185,11 @@ class CutechessExecutorBatch:
     ):
         """Compute a batch of games using cutechess, specifying an executor
 
-           The executor (e.g. MPIPoolExecutor) allows for concurrency, in evaluating batches
+        The executor (e.g. MPIPoolExecutor) allows for concurrency, in evaluating batches
         """
 
         self.local_batch = CutechessLocalBatch(
-            cutechess, stockfish, stockfishRef, book, tc, rounds, concurrency
+            cutechess, stockfish, stockfishRef, book, tc, tcRef, rounds, concurrency
         )
         self.batches = batches
         self.total_games = self.batches * self.local_batch.total_games
@@ -199,8 +198,8 @@ class CutechessExecutorBatch:
     def run(self, variables):
         """Run a batch of games returning a list  containing 'w' 'l' 'd' results
 
-           The results are show from the point of view of test, which is the version that is
-           setup using the options set using the variables.
+        The results are show from the point of view of test, which is the version that is
+        setup using the options set using the variables.
         """
         score = []
         fs = []
@@ -266,6 +265,13 @@ if __name__ == "__main__":
         "-tc", "--tc", type=str, default="10.0+0.1", help="time control"
     )
     parser.add_argument(
+        "-tcRef",
+        "--tcRef",
+        type=str,
+        default=None,
+        help="time control for reference, defaults to the argument of --tc",
+    )
+    parser.add_argument(
         "-g",
         "--games_per_batch",
         type=int,
@@ -304,6 +310,7 @@ if __name__ == "__main__":
         stockfishRef=args.stockfishRef if args.stockfishRef else args.stockfish,
         book=args.book,
         tc=args.tc,
+        tcRef=args.tcRef if args.tcRef else args.tc,
         rounds=((args.games_per_batch + 1) // 2 + workers - 1) // workers,
         concurrency=args.cutechess_concurrency,
         batches=workers,
